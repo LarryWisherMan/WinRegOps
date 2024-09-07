@@ -40,6 +40,7 @@
     },
     "conventionalCommits.scopes": [
         "WinRegOps",
-        "coverage"
+        "coverage",
+        "Backup-RegistryKey"
     ]
 }

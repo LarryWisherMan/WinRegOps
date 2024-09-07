@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Open-RegistryKey`
   - `Open-RegistrySubKey`
   - `Remove-RegistrySubKey`
+- Added unit test skeletons for all public functions in the WinRegOps
 
 ### Changed
 - Added 'WisherTools.Helpers' to Nested Modules
