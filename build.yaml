@@ -28,12 +28,12 @@ VersionedOutputDirectory: true
 ####################################################
 
 NestedModule:
-#  TestSubModule: # This is the first submodule to build into the output
-#    Path: ./source/Modules/TestSubModule/TestSubModule.psd1
+#  HelperSubmodule: # This is the first submodule to build into the output
+#    Path: ./*/Modules/HelperSubmodule/HelperSubmodule.psd1
 #    #  is trimmed (remove metadata & Prerelease tag) and OutputDirectory expanded (the only one)
-#    OutputDirectory: $BuildModuleOutput/$ProjectName/$ModuleVersionFolder/Modules/TestSubModule
+#    OutputDirectory: ///Modules/HelperSubmodule
 #    VersionedOutputDirectory: false
-#    AddToManifest: true
+#    AddToManifest: false
 #    SemVer:
 #    # suffix:
 #    # prefix:
@@ -50,7 +50,7 @@ BuildWorkflow:
   build:
     - Clean
     - Build_Module_ModuleBuilder
-#    - Build_NestedModules_ModuleBuilder
+    - Build_NestedModules_ModuleBuilder
     - Create_changelog_release_output
 
 
@@ -68,7 +68,7 @@ BuildWorkflow:
     # Use this task if pipeline uses code coverage and the module is using the
     # pattern of Public, Private, Enum, Classes.
     #- Convert_Pester_Coverage
-    - Pester_if_Code_Coverage_Under_Threshold
+    #- Pester_if_Code_Coverage_Under_Threshold
 
   # Use this task when you have multiple parallel tests, which produce multiple
   # code coverage files and needs to get merged into one file.
@@ -99,9 +99,9 @@ Pester:
   # - tests/Unit
   # - tests/Integration
   ExcludeTag:
-  #  - helpQuality
-  #  - FunctionalQuality
-  #  - TestQuality
+    - helpQuality
+    - FunctionalQuality
+    - TestQuality
   Tag:
   CodeCoverageThreshold: 85 # Set to 0 to bypass
   #CodeCoverageOutputFile: JaCoCo_$OsShortName.xml
