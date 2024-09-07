@@ -1,3 +1,37 @@
+<#
+.SYNOPSIS
+Removes a subkey from a registry key.
+
+.DESCRIPTION
+This function deletes a subkey from a specified parent registry key. It supports the -WhatIf and -Confirm parameters for safety.
+
+.PARAMETER ParentKey
+The parent registry key object.
+
+.PARAMETER SubKeyName
+The name of the subkey to be deleted.
+
+.PARAMETER ComputerName
+The name of the computer where the registry subkey is located. Defaults to the local computer.
+
+.EXAMPLE
+$key = Open-RegistryKey -RegistryPath 'HKLM\Software'
+Remove-RegistrySubKey -ParentKey $key -SubKeyName 'MyApp'
+
+Deletes the subkey 'MyApp' under the registry key 'HKLM\Software' on the local computer.
+
+.EXAMPLE
+$key = Open-RegistryKey -RegistryPath 'HKLM\Software'
+Remove-RegistrySubKey -ParentKey $key -SubKeyName 'MyApp' -WhatIf
+
+Shows what would happen if the subkey 'MyApp' were deleted, without actually performing the deletion.
+
+.OUTPUTS
+System.Boolean
+
+.NOTES
+
+#>
 function Remove-RegistrySubKey {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='High')]
     param (

@@ -1,3 +1,29 @@
+<#
+.SYNOPSIS
+Exports a registry key to a .reg file.
+
+.DESCRIPTION
+This function exports a registry key to a specified file path. It can be run on a local or remote computer. The function uses the 'reg export' command to perform the export operation and returns the success status.
+
+.PARAMETER RegistryPath
+The full path of the registry key to be exported.
+
+.PARAMETER ExportPath
+The file path where the exported .reg file will be saved.
+
+.PARAMETER ComputerName
+The name of the computer from which the registry key will be exported. Defaults to the local computer.
+
+.EXAMPLE
+Export-RegistryKey -RegistryPath 'HKCU\Software\MyApp' -ExportPath 'C:\Backups\MyApp.reg'
+
+Exports the registry key 'HKCU\Software\MyApp' to 'C:\Backups\MyApp.reg'.
+
+.OUTPUTS
+System.Object
+
+.NOTES
+#>
 function Export-RegistryKey {
     param (
         [string]$RegistryPath,   # The registry path to be exported

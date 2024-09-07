@@ -1,3 +1,35 @@
+<#
+.SYNOPSIS
+Backs up a registry key from a specified computer to a backup file.
+
+.DESCRIPTION
+This function allows you to back up a registry key from a local or remote computer. It exports the registry key to a .reg file and saves it in the specified backup directory. It includes error handling for permission issues and remote access failures.
+
+.PARAMETER ComputerName
+The name of the computer from which the registry key will be backed up. Defaults to the local computer.
+
+.PARAMETER RegistryPath
+The full path of the registry key to be backed up.
+
+.PARAMETER BackupDirectory
+The directory where the backup file will be saved. Defaults to "C:\LHStuff\UserProfileTools\RegProfBackup".
+
+.EXAMPLE
+Backup-RegistryKey -RegistryPath 'HKLM\Software\MyApp' -BackupDirectory 'C:\Backups'
+
+Backs up the registry key 'HKLM\Software\MyApp' on the local computer to the 'C:\Backups' directory.
+
+.EXAMPLE
+Backup-RegistryKey -ComputerName 'RemotePC' -RegistryPath 'HKLM\Software\MyApp'
+
+Backs up the registry key 'HKLM\Software\MyApp' from the remote computer 'RemotePC' to the default backup directory.
+
+.OUTPUTS
+System.Object
+
+.NOTES
+#>
+
 function Backup-RegistryKey {
     param (
         [string]$ComputerName = $env:COMPUTERNAME,

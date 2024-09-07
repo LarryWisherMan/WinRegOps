@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added core functions
+- Added comment-based help to all public functions in the `WinRegOps` module for improved usability:
+  - `Backup-RegistryKey`
+  - `Export-RegistryKey`
+  - `Get-RegistryValue`
+  - `Open-RegistryKey`
+  - `Open-RegistrySubKey`
+  - `Remove-RegistrySubKey`
 
 ### Changed
 - Added 'WisherTools.Helpers' to Nested Modules

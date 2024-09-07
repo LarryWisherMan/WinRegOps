@@ -1,3 +1,35 @@
+<#
+.SYNOPSIS
+Opens a registry key on a local or remote computer.
+
+.DESCRIPTION
+This function opens a registry key on a local or remote computer. It returns the registry key object if successful, or $null if the key does not exist or access is denied.
+
+.PARAMETER RegistryPath
+The full path of the registry key to be opened.
+
+.PARAMETER RegistryHive
+The registry hive to open (e.g., HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER). Defaults to HKEY_LOCAL_MACHINE.
+
+.PARAMETER ComputerName
+The name of the computer where the registry key is located. Defaults to the local computer.
+
+.EXAMPLE
+Open-RegistryKey -RegistryPath 'HKLM\Software\MyApp'
+
+Opens the registry key 'HKLM\Software\MyApp' on the local computer.
+
+.EXAMPLE
+Open-RegistryKey -RegistryPath 'Software\MyApp' -RegistryHive 'HKEY_CURRENT_USER' -ComputerName 'RemotePC'
+
+Opens the registry key 'Software\MyApp' under HKEY_CURRENT_USER on the remote computer 'RemotePC'.
+
+.OUTPUTS
+Microsoft.Win32.RegistryKey
+
+.NOTES
+
+#>
 function Open-RegistryKey {
     [CmdletBinding()]
     param (
