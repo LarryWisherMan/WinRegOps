@@ -41,6 +41,7 @@
     "conventionalCommits.scopes": [
         "WinRegOps",
         "coverage",
-        "Backup-RegistryKey"
+        "Backup-RegistryKey",
+        "Export-RegistryKey"
     ]
 }
