@@ -42,6 +42,7 @@
         "WinRegOps",
         "coverage",
         "Backup-RegistryKey",
-        "Export-RegistryKey"
+        "Export-RegistryKey",
+        "Get-RegistryValue"
     ]
 }
