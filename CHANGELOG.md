@@ -18,3 +18,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Added 'WisherTools.Helpers' to Nested Modules
+- Updated `build.yaml` to exclude `Modules/WisherTools.Helpers` from code coverage analysis.
