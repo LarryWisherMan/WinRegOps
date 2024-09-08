@@ -32,29 +32,36 @@ System.Boolean
 .NOTES
 
 #>
-function Remove-RegistrySubKey {
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='High')]
+function Remove-RegistrySubKey
+{
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param (
         [Parameter(Mandatory = $true)]
-        [Microsoft.Win32.RegistryKey]$ParentKey,  # The parent registry key
-        [string]$SubKeyName,                      # The subkey to be deleted
+        [Microsoft.Win32.RegistryKey]$ParentKey, # The parent registry key
+        [string]$SubKeyName, # The subkey to be deleted
         [string]$ComputerName = $env:COMPUTERNAME # Default to local computer
     )
 
-    try {
+    try
+    {
         # Ensure ShouldProcess is used for safety with -WhatIf and -Confirm support
-        if ($PSCmdlet.ShouldProcess("Registry subkey '$SubKeyName' on $ComputerName", "Remove")) {
+        if ($PSCmdlet.ShouldProcess("Registry subkey '$SubKeyName' on $ComputerName", "Remove"))
+        {
             # Proceed with deletion
             $ParentKey.DeleteSubKeyTree($SubKeyName)
             Write-Verbose "Successfully removed registry subkey '$SubKeyName' on $ComputerName."
             return $true
-        } else {
+        }
+        else
+        {
             # ShouldProcess returned false, so nothing is done
             Write-Verbose "Operation to remove registry subkey '$SubKeyName' on $ComputerName was skipped."
             return $false
         }
 
-    } catch {
+    }
+    catch
+    {
         Write-Error "Failed to remove the registry subkey '$SubKeyName' on $ComputerName. Error: $_"
         return $false
     }

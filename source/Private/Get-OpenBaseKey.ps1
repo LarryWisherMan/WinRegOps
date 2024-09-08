@@ -28,7 +28,8 @@ Opens the HKEY_LOCAL_MACHINE hive on the local computer using the 32-bit view of
 .NOTES
 This function is a wrapper around the Microsoft.Win32.RegistryKey::OpenBaseKey method, providing an easier interface for opening registry hives locally.
 #>
-function Get-OpenBaseKey {
+function Get-OpenBaseKey
+{
     param (
         [Microsoft.Win32.RegistryHive]$RegistryHive,
         [Microsoft.Win32.RegistryView]$RegistryView = [Microsoft.Win32.RegistryView]::Default

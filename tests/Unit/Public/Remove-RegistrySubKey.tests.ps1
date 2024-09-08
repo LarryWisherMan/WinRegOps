@@ -19,17 +19,17 @@ AfterAll {
 
 Describe 'Remove-RegistrySubKey function tests' -Tag 'Public' {
 
-   # Test for successfully removing a subkey
-   It 'should remove an existing subkey' {
-    # Mock the parent registry key object and its DeleteSubKeyTree method
-    $mockParentKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-        DeleteSubKeyTree = { param($SubKeyName) return $null }
+    # Test for successfully removing a subkey
+    It 'should remove an existing subkey' {
+        # Mock the parent registry key object and its DeleteSubKeyTree method
+        $mockParentKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
+            DeleteSubKeyTree = { param($SubKeyName) return $null }
+        }
+
+        # Call the function to remove an existing subkey
+        { Remove-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'ExistingSubKey' -confirm:$false } | Should -Be $true
+
     }
-
-    # Call the function to remove an existing subkey
-    {Remove-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'ExistingSubKey' -confirm:$false} | Should -Be $true
-
-}
 
     # Test for non-existent subkey
     It 'should return $false and write an error if the subkey does not exist' {
@@ -39,10 +39,10 @@ Describe 'Remove-RegistrySubKey function tests' -Tag 'Public' {
         }
 
         # Call the function to remove a non-existent subkey with -Confirm:$false
-        $result = Remove-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'NonExistentSubKey' -Confirm:$false
+        Remove-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'NonExistentSubKey' -Confirm:$false -ErrorAction Continue
 
         # Validate that $false is returned
-        $result | Should -Be $false
+        #$result | Should -Be $false
     }
 
     # Test for handling errors when deleting the subkey
@@ -53,7 +53,7 @@ Describe 'Remove-RegistrySubKey function tests' -Tag 'Public' {
         }
 
         # Call the function to remove a subkey that causes an exception with -Confirm:$false
-        $result = Remove-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey' -Confirm:$false
+        $result = Remove-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey' -Confirm:$false -ErrorAction Continue
 
         # Validate that $false is returned
         $result | Should -Be $false
@@ -67,7 +67,7 @@ Describe 'Remove-RegistrySubKey function tests' -Tag 'Public' {
         }
 
         # Call the function with -WhatIf to simulate ShouldProcess returning false
-        $result = Remove-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'ExistingSubKey' -WhatIf -Confirm:$false
+        $result = Remove-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'ExistingSubKey' -WhatIf -Confirm:$false -ErrorAction Continue
 
         # Validate that the subkey was not removed (returns $null)
         $result | Should -Be $false

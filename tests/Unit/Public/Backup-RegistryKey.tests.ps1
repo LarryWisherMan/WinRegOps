@@ -1,3 +1,5 @@
+
+
 BeforeAll {
     $script:dscModuleName = "WinRegOps"
     Import-Module -Name $script:dscModuleName
@@ -5,6 +7,9 @@ BeforeAll {
     $PSDefaultParameterValues['InModuleScope:ModuleName'] = $script:dscModuleName
     $PSDefaultParameterValues['Mock:ModuleName'] = $script:dscModuleName
     $PSDefaultParameterValues['Should:ModuleName'] = $script:dscModuleName
+
+    $helperPath = "$PSScriptRoot/../../Helpers/Log-TestDetails.ps1"
+    . $helperPath
 }
 
 AfterAll {
@@ -23,11 +28,11 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
         Mock Test-DirectoryExists {}
         Mock Get-BackupFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
         Mock Export-RegistryKey { return @{
-            Success = $true
-            BackupPath = "TestDrive:\ProfileListBackup_20220101_010101.reg"
-            Message = "Registry key backed up successfully."
-            ComputerName = "localhost"
-        } }
+                Success      = $true
+                BackupPath   = "TestDrive:\ProfileListBackup_20220101_010101.reg"
+                Message      = "Registry key backed up successfully."
+                ComputerName = "localhost"
+            } }
 
         Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp'
 
@@ -41,11 +46,11 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
         Mock Get-DirectoryPath { return "TestDrive:\RegProfBackup" }
         Mock Get-BackupFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
         Mock Export-RegistryKey { return @{
-            Success = $true
-            BackupPath = "TestDrive:\ProfileListBackup_20220101_010101.reg"
-            Message = "Registry key backed up successfully."
-            ComputerName = $env:COMPUTERNAME  # Simulate local computer name in the result
-        } }
+                Success      = $true
+                BackupPath   = "TestDrive:\ProfileListBackup_20220101_010101.reg"
+                Message      = "Registry key backed up successfully."
+                ComputerName = $env:COMPUTERNAME  # Simulate local computer name in the result
+            } }
 
         # Call the function for local operation
         $result = Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp'
@@ -68,25 +73,25 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
         Mock Get-BackupFilePath { return "\\RemotePC\TestDrive$\ProfileListBackup_20220101_010101.reg" }
 
         Mock Export-RegistryKey { return @{
-            Success = $true
-            BackupPath = "\\RemotePC\TestDrive$\ProfileListBackup_20220101_010101.reg"
-            Message = "Registry key backed up successfully."
-            ComputerName = 'RemotePC'
-        } }
+                Success      = $true
+                BackupPath   = "\\RemotePC\TestDrive$\ProfileListBackup_20220101_010101.reg"
+                Message      = "Registry key backed up successfully."
+                ComputerName = 'RemotePC'
+            } }
 
         Mock Get-FunctionScriptBlock { return @{
-            Success = $true
-            BackupPath = "\\RemotePC\TestDrive$\ProfileListBackup_20220101_010101.reg"
-            Message = "Registry key backed up successfully."
-            ComputerName = 'RemotePC'
-        } }
+                Success      = $true
+                BackupPath   = "\\RemotePC\TestDrive$\ProfileListBackup_20220101_010101.reg"
+                Message      = "Registry key backed up successfully."
+                ComputerName = 'RemotePC'
+            } }
 
         # Mock the result of Invoke-Command to simulate a successful remote operation
         Mock Invoke-Command {
             return @{
-                Success = $true
-                BackupPath = "\\RemotePC\TestDrive$\ProfileListBackup_20220101_010101.reg"
-                Message = "Registry key backed up successfully."
+                Success      = $true
+                BackupPath   = "\\RemotePC\TestDrive$\ProfileListBackup_20220101_010101.reg"
+                Message      = "Registry key backed up successfully."
                 ComputerName = 'RemotePC'
             }
         }
@@ -95,7 +100,7 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
         $result = Backup-RegistryKey -ComputerName 'RemotePC' -RegistryPath 'TestRegistry:\Software\MyApp' -BackupDirectory "TestDrive:\Backups"
         # Verify that Invoke-Command was called for remote backup
         Assert-MockCalled Invoke-Command -Exactly 1 -Scope It -ParameterFilter {
-           $ComputerName -eq 'RemotePC' -and $ScriptBlock -ne $null
+            $ComputerName -eq 'RemotePC' -and $ScriptBlock -ne $null
         }
 
         # Ensure the parameters in the result are correct
@@ -104,23 +109,41 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
     }
 
     It 'should return an error if backup fails using TestDrive' {
+        # Mock functions
         Mock Export-RegistryKey { return @{ Success = $false; Message = "Failed to export key." } }
         Mock Test-DirectoryExists {}
         Mock Get-BackupFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
 
-        $result = Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp'
+        # Call the function
+        $result = Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp' -ErrorAction Continue
+
+
+        # Log details using Log-TestDetails
+        Log-TestDetails -TestName 'should return an error if backup fails using TestDrive' `
+            -Details $result `
+            -AdditionalInfo 'RegistryPath: TestRegistry:\Software\MyApp, Backup Path: TestDrive:\ProfileListBackup_20220101_010101.reg'
+
 
         # Validate the error response
         $result.Success | Should -Be $false
         $result.Message | Should -Be "Failed to export key."
     }
 
+
     It 'should handle exceptions and return an error message using TestDrive and TestRegistry' {
+        # Mock functions
         Mock Export-RegistryKey { throw "Unexpected error" }
         Mock Test-DirectoryExists {}
         Mock Get-BackupFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
 
-        $result = Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp'
+        # Call the function
+        $result = Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp' -ErrorAction Continue
+
+        # Log details for debugging
+        Log-TestDetails -TestName 'should handle exceptions and return an error message using TestDrive and TestRegistry' `
+            -Details $result `
+            -AdditionalInfo 'RegistryPath: TestRegistry:\Software\MyApp, Backup Path: TestDrive:\ProfileListBackup_20220101_010101.reg'
+
 
         # Validate that $result is not null before making assertions
         $result | Should -Not -BeNullOrEmpty
@@ -129,5 +152,6 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
         $result.Success | Should -Be $false
         $result.Message | Should -Be "Failed to back up the registry key 'TestRegistry:\Software\MyApp'. Unexpected error"
     }
+
 
 }

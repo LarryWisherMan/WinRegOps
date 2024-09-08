@@ -31,7 +31,8 @@ Microsoft.Win32.RegistryKey
 This function uses helper functions Get-OpenBaseKey and Get-OpenRemoteBaseKey to abstract the static calls for opening registry keys locally or remotely.
 #>
 
-function Open-RegistryKey {
+function Open-RegistryKey
+{
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -44,29 +45,40 @@ function Open-RegistryKey {
         [string]$ComputerName = $env:COMPUTERNAME
     )
 
-    try {
+    try
+    {
         # Determine if the operation is local or remote
         $isLocal = $ComputerName -eq $env:COMPUTERNAME
-        $regKey = if ($isLocal) {
+        $regKey = if ($isLocal)
+        {
             Get-OpenBaseKey -RegistryHive $RegistryHive
-        } else {
+        }
+        else
+        {
             Get-OpenRemoteBaseKey -RegistryHive $RegistryHive -ComputerName $ComputerName
         }
 
         # Open the subkey
         $openedKey = $regKey.OpenSubKey($RegistryPath, $true)
 
-        if ($openedKey) {
+        if ($openedKey)
+        {
             Write-Verbose "Successfully opened registry key at path '$RegistryPath' on '$ComputerName'."
             return $openedKey
-        } else {
+        }
+        else
+        {
             Write-Warning "Registry key at path '$RegistryPath' not found on '$ComputerName'."
             return $null
         }
-    } catch [System.Security.SecurityException] {
+    }
+    catch [System.Security.SecurityException]
+    {
         Write-Error "Access denied to registry key '$RegistryPath' on '$ComputerName'. Ensure you have sufficient permissions."
         return $null
-    } catch {
+    }
+    catch
+    {
         Write-Error "Failed to open registry key at path '$RegistryPath' on '$ComputerName'. Error: $_"
         return $null
     }

@@ -23,7 +23,8 @@ Opens the HKEY_LOCAL_MACHINE hive on the remote computer 'RemotePC'.
 .NOTES
 This function is a wrapper around the Microsoft.Win32.RegistryKey::OpenRemoteBaseKey method, providing an easier interface for opening registry hives on remote computers. The remote registry service must be enabled on the target machine.
 #>
-function Get-OpenRemoteBaseKey {
+function Get-OpenRemoteBaseKey
+{
     param (
         [Microsoft.Win32.RegistryHive]$RegistryHive,
         [string]$ComputerName

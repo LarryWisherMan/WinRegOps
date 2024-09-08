@@ -16,6 +16,9 @@
     "files.trimTrailingWhitespace": true,
     "files.trimFinalNewlines": true,
     "files.insertFinalNewline": true,
+    "files.autoSave": "afterDelay", // Enables autosave after a delay
+    "files.autoSaveDelay": 1000, // Autosave after 1 second of inactivity (1000ms)
+    "editor.formatOnSave": true, // Enables format on save
     "files.associations": {
         "*.ps1xml": "xml"
     },
@@ -46,6 +49,7 @@
         "Get-RegistryValue",
         "Open-RegistryKey",
         "Open-RegistrySubKey",
-        "Remove-RegistrySubKey"
+        "Remove-RegistrySubKey",
+        "tests"
     ]
 }

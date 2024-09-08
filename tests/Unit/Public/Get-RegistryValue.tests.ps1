@@ -6,6 +6,9 @@ BeforeAll {
     $PSDefaultParameterValues['InModuleScope:ModuleName'] = $script:dscModuleName
     $PSDefaultParameterValues['Mock:ModuleName'] = $script:dscModuleName
     $PSDefaultParameterValues['Should:ModuleName'] = $script:dscModuleName
+
+    $helperPath = "$PSScriptRoot/../../Helpers/Log-TestDetails.ps1"
+    . $helperPath
 }
 
 AfterAll {
@@ -23,7 +26,14 @@ Describe 'Get-RegistryValue function tests' -Tag 'Public' {
     It 'should retrieve the specified value from the registry' {
         # Mock the RegistryKey object and the GetValue method to simulate a successful retrieval
         $mockKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-            GetValue = { param($ValueName) if ($ValueName -eq 'Setting') { return 'Value123' } else { return $null } }
+            GetValue = { param($ValueName) if ($ValueName -eq 'Setting')
+                {
+                    return 'Value123'
+                }
+                else
+                {
+                    return $null
+                } }
         }
 
         # Call the function
@@ -41,11 +51,13 @@ Describe 'Get-RegistryValue function tests' -Tag 'Public' {
         }
 
         # Call the function
-        $result = Get-RegistryValue -Key $mockKey -ValueName 'NonExistentValue'
+        $result = Get-RegistryValue -Key $mockKey -ValueName 'NonExistentValue' -ErrorAction Continue
 
         # Validate that $null is returned
         $result | Should -Be $null
     }
+
+
 
     # Test when an error occurs while retrieving the value
     It 'should handle errors and return $null when an exception is thrown' {
@@ -55,29 +67,34 @@ Describe 'Get-RegistryValue function tests' -Tag 'Public' {
         }
 
         # Call the function
-        $result = Get-RegistryValue -Key $mockKey -ValueName 'Setting'
+        $result = Get-RegistryValue -Key $mockKey -ValueName 'Setting' -ErrorAction Continue
+
+        # Log details for debugging
+        Log-TestDetails -TestName 'should handle errors and return $null when an exception is thrown' `
+            -Details $result `
+            -AdditionalInfo 'Key: $mockKey, ValueName: Setting'
 
         # Validate that $null is returned and an error was written
         $result | Should -Be $null
     }
 
     # Test that verbose message is written when value is not found
-It 'should write a verbose message if the value is not found' {
-    # Mock the RegistryKey object to simulate a missing value
-    $mockKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-        GetValue = { param($ValueName) return $null }
+    It 'should write a verbose message if the value is not found' {
+        # Mock the RegistryKey object to simulate a missing value
+        $mockKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
+            GetValue = { param($ValueName) return $null }
+        }
+
+        # Mock Write-Verbose to capture the verbose message
+        Mock Write-Verbose
+
+        # Call the function with the -Verbose switch
+        Get-RegistryValue -Key $mockKey -ValueName 'NonExistentValue' -Verbose -ErrorAction Continue
+
+        # Verify that Write-Verbose was called with the correct message
+        Assert-MockCalled Write-Verbose -Exactly 1 -Scope It -ParameterFilter {
+            $Message -eq 'NonExistentValue not found in the registry key.'
+        }
     }
-
-    # Mock Write-Verbose to capture the verbose message
-    Mock Write-Verbose
-
-    # Call the function with the -Verbose switch
-    Get-RegistryValue -Key $mockKey -ValueName 'NonExistentValue' -Verbose
-
-    # Verify that Write-Verbose was called with the correct message
-    Assert-MockCalled Write-Verbose -Exactly 1 -Scope It -ParameterFilter {
-        $Message -eq 'NonExistentValue not found in the registry key.'
-    }
-}
 
 }

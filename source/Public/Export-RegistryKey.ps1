@@ -24,26 +24,31 @@ System.Object
 
 .NOTES
 #>
-function Export-RegistryKey {
+function Export-RegistryKey
+{
     param (
-        [string]$RegistryPath,   # The registry path to be exported
-        [string]$ExportPath,     # The path where the backup .reg file will be saved
+        [string]$RegistryPath, # The registry path to be exported
+        [string]$ExportPath, # The path where the backup .reg file will be saved
         [string]$ComputerName = $env:COMPUTERNAME    # The name of the computer (local or remote)
     )
 
-    try {
+    try
+    {
         $exportCommand = "reg export `"$RegistryPath`" `"$ExportPath`" /y"
 
         # Execute the export command
         $exportResult = Invoke-Expression $exportCommand
-        if ($LASTEXITCODE -eq 0) {
+        if ($LASTEXITCODE -eq 0)
+        {
             return @{
                 Success      = $true
                 BackupPath   = $ExportPath
                 Message      = "Registry key '$RegistryPath' successfully backed up to '$ExportPath'."
                 ComputerName = $ComputerName
             }
-        } else {
+        }
+        else
+        {
             return @{
                 Success      = $false
                 BackupPath   = $null
@@ -51,7 +56,9 @@ function Export-RegistryKey {
                 ComputerName = $ComputerName
             }
         }
-    } catch {
+    }
+    catch
+    {
         return @{
             Success      = $false
             BackupPath   = $null

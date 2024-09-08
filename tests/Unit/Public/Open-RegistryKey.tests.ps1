@@ -6,6 +6,9 @@ BeforeAll {
     $PSDefaultParameterValues['InModuleScope:ModuleName'] = $script:dscModuleName
     $PSDefaultParameterValues['Mock:ModuleName'] = $script:dscModuleName
     $PSDefaultParameterValues['Should:ModuleName'] = $script:dscModuleName
+
+    $helperPath = "$PSScriptRoot/../../Helpers/Log-TestDetails.ps1"
+    . $helperPath
 }
 
 AfterAll {
@@ -23,14 +26,28 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
         # Mock the helper functions that abstract static methods
         Mock Get-OpenBaseKey {
             $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-                OpenSubKey = { param($path, $writable) if ($path -eq 'Software\MyApp') { return 'MockedRegistryKey' } else { return $null } }
+                OpenSubKey = { param($path, $writable) if ($path -eq 'Software\MyApp')
+                    {
+                        return 'MockedRegistryKey'
+                    }
+                    else
+                    {
+                        return $null
+                    } }
             }
             return $mockRegistryKey
         }
 
         Mock Get-OpenRemoteBaseKey {
             $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-                OpenSubKey = { param($path, $writable) if ($path -eq 'Software\MyApp') { return 'MockedRemoteRegistryKey' } else { return $null } }
+                OpenSubKey = { param($path, $writable) if ($path -eq 'Software\MyApp')
+                    {
+                        return 'MockedRemoteRegistryKey'
+                    }
+                    else
+                    {
+                        return $null
+                    } }
             }
             return $mockRegistryKey
         }
@@ -59,7 +76,7 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
         }
 
         # Call the function
-        $result = Open-RegistryKey -RegistryPath 'Software\NonExistentKey'
+        $result = Open-RegistryKey -RegistryPath 'Software\NonExistentKey' -ErrorAction Continue
 
         # Validate that $null is returned
         $result | Should -Be $null
@@ -81,32 +98,49 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
     }
 
     # Test for handling access denied
+    # Test for handling access denied
     It 'should return $null and write an error if access is denied' {
         # Mock access denied exception
-        Mock Get-OpenBaseKey { throw [System.Security.SecurityException]::new("Access Denied") }
+        Mock -ModuleName $Script:dscModuleName -CommandName Get-OpenBaseKey { throw [System.Security.SecurityException]::new("Access Denied") }
 
         # Call the function
-        $result = Open-RegistryKey -RegistryPath 'Software\MyApp'
+        $result = Open-RegistryKey -RegistryPath 'Software\MyApp' -ErrorAction Continue
+
+        # Log details for debugging
+        Log-TestDetails -TestName 'should return $null and write an error on failure' `
+            -Details $result `
+            -AdditionalInfo 'RegistryPath: Software\MyApp, Expected Error: Unexpected error'
 
         # Validate that $null is returned
         $result | Should -Be $null
 
         # Ensure the error was thrown and caught correctly
         Assert-MockCalled Get-OpenBaseKey -Exactly 1 -Scope It
+
+
     }
 
     # Test for generic failure when opening the registry key
     It 'should return $null and write an error on failure' {
         # Mock a generic failure
-        Mock Get-OpenBaseKey { throw [Exception]::new("Unexpected error") }
+        Mock -ModuleName $Script:dscModuleName -CommandName Get-OpenBaseKey { throw [Exception]::new("Unexpected error") }
 
         # Call the function
-        $result = Open-RegistryKey -RegistryPath 'Software\MyApp'
+        $result = Open-RegistryKey -RegistryPath 'Software\MyApp' -ErrorAction Continue
+
+        # Log details for debugging
+        Log-TestDetails -TestName 'should return $null and write an error on failure' `
+            -Details $result `
+            -AdditionalInfo 'RegistryPath: Software\MyApp, Expected Error: Unexpected error'
 
         # Validate that $null is returned
         $result | Should -Be $null
 
         # Ensure the error was thrown and caught correctly
         Assert-MockCalled Get-OpenBaseKey -Exactly 1 -Scope It
+
+        # Check that the correct error message was written
+
     }
+
 }

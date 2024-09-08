@@ -22,9 +22,16 @@ Describe 'Open-RegistrySubKey function tests' -Tag 'Public' {
     # Test for successfully opening a subkey
     It 'should open an existing subkey' {
 
-         # Mock the parent registry key object and its OpenSubKey method using New-MockObject
-         $mockParentKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-            OpenSubKey = { param($subKeyName) if ($subKeyName -eq 'ExistingSubKey') { return 'MockedSubKey' } else { return $null } }
+        # Mock the parent registry key object and its OpenSubKey method using New-MockObject
+        $mockParentKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
+            OpenSubKey = { param($subKeyName) if ($subKeyName -eq 'ExistingSubKey')
+                {
+                    return 'MockedSubKey'
+                }
+                else
+                {
+                    return $null
+                } }
         }
 
         # Call the function
@@ -41,11 +48,18 @@ Describe 'Open-RegistrySubKey function tests' -Tag 'Public' {
     It 'should return $null if the subkey does not exist' {
 
         $mockParentKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-            OpenSubKey = { param($subKeyName) if ($subKeyName -eq 'ExistingSubKey') { return 'MockedSubKey' } else { return $null } }
+            OpenSubKey = { param($subKeyName) if ($subKeyName -eq 'ExistingSubKey')
+                {
+                    return 'MockedSubKey'
+                }
+                else
+                {
+                    return $null
+                } }
         }
 
         # Call the function with a non-existent subkey
-        $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'NonExistentSubKey'
+        $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'NonExistentSubKey' -ErrorAction Continue
 
         # Validate that $null is returned
         $result | Should -Be $null
@@ -62,7 +76,7 @@ Describe 'Open-RegistrySubKey function tests' -Tag 'Public' {
         }
 
         # Call the function
-        $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey'
+        $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey' -ErrorAction Continue
 
         # Validate that $null is returned
         $result | Should -Be $null

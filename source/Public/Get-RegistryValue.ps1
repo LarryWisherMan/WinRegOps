@@ -23,20 +23,25 @@ System.Object
 .NOTES
 #>
 
-function Get-RegistryValue {
+function Get-RegistryValue
+{
     param (
         [Microsoft.Win32.RegistryKey]$Key,
         [string]$ValueName
     )
 
-    try {
+    try
+    {
         # Retrieve the specified registry value
         $value = $Key.GetValue($ValueName, $null)
-        if (-not $value) {
+        if (-not $value)
+        {
             Write-Verbose "$ValueName not found in the registry key."
         }
         return $value
-    } catch {
+    }
+    catch
+    {
         Write-Error "Failed to retrieve value '$ValueName'. Error: $_"
         return $null
     }
