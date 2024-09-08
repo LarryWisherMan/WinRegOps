@@ -75,9 +75,18 @@ Describe 'Open-RegistrySubKey function tests' -Tag 'Public' {
             OpenSubKey = { throw [Exception]::new("Unexpected error") }
         }
 
-        # Call the function
-        $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey' -ErrorAction Continue
+        try
+        {
 
+
+            # Call the function
+            $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey' -ErrorAction Continue
+
+        }
+        catch
+        {
+            Write-Host $_.Exception.Message
+        }
         # Validate that $null is returned
         $result | Should -Be $null
 

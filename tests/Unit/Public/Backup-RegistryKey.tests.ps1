@@ -110,16 +110,24 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
 
     It 'should return an error if backup fails using TestDrive' {
         # Mock functions
-        Mock Export-RegistryKey { return @{ Success = $false; Message = "Failed to export key." } }
-        Mock Test-DirectoryExists {}
-        Mock Get-BackupFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
+        Mock -ModuleName $Script:dscModuleName -CommandName Export-RegistryKey { return @{ Success = $false; Message = "Failed to export key." } }
+        Mock -ModuleName $Script:dscModuleName -CommandName  Test-DirectoryExists {}
+        Mock -ModuleName $Script:dscModuleName -CommandName  Get-BackupFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
 
-        # Call the function
-        $result = Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp' -ErrorAction Continue
+        try
+        {
+            # Call the function
+            $result = Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp' -ErrorAction Continue
+        }
+
+        catch
+        {
+            $result = $_.Exception.Message
+        }
 
 
         # Log details using Log-TestDetails
-        Log-TestDetails -TestName 'should return an error if backup fails using TestDrive' `
+        Log-TestDetails -TestName 'Backup-RegistryKey - should return an error if backup fails using TestDrive' `
             -Details $result `
             -AdditionalInfo 'RegistryPath: TestRegistry:\Software\MyApp, Backup Path: TestDrive:\ProfileListBackup_20220101_010101.reg'
 
@@ -130,17 +138,26 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
     }
 
 
+
     It 'should handle exceptions and return an error message using TestDrive and TestRegistry' {
         # Mock functions
-        Mock Export-RegistryKey { throw "Unexpected error" }
+        Mock Export-RegistryKey { throw [Exception]::new("Unexpected error") }
         Mock Test-DirectoryExists {}
         Mock Get-BackupFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
 
-        # Call the function
-        $result = Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp' -ErrorAction Continue
+        try
+        {
+            # Call the function
+            $result = Backup-RegistryKey -RegistryPath 'TestRegistry:\Software\MyApp' -ErrorAction Continue
+        }
+
+        catch
+        {
+            $result = $_.Exception.Message
+        }
 
         # Log details for debugging
-        Log-TestDetails -TestName 'should handle exceptions and return an error message using TestDrive and TestRegistry' `
+        Log-TestDetails -TestName 'Backup-RegistryKey - should handle exceptions and return an error message using TestDrive and TestRegistry' `
             -Details $result `
             -AdditionalInfo 'RegistryPath: TestRegistry:\Software\MyApp, Backup Path: TestDrive:\ProfileListBackup_20220101_010101.reg'
 

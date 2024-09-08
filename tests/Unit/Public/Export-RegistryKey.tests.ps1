@@ -100,8 +100,6 @@ Describe 'Export-RegistryKey.tests.ps1 Tests' -Tag 'Public' {
 
 
         $result = Export-RegistryKey -RegistryPath 'HKCU\Software\MyApp' -ExportPath '\\RemotePC\Backups\MyApp.reg' -ComputerName 'RemotePC'
-        write-host ($result | Out-String)
-
         $result.Success | Should -Be $true
         $result.Message | Should -Be "Registry key 'HKCU\Software\MyApp' successfully backed up to '\\RemotePC\Backups\MyApp.reg'."
     }

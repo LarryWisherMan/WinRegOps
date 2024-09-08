@@ -63,7 +63,7 @@ Describe 'Get-RegistryValue function tests' -Tag 'Public' {
     It 'should handle errors and return $null when an exception is thrown' {
         # Mock the RegistryKey object to throw an error when GetValue is called
         $mockKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-            GetValue = { throw "Registry read error" }
+            GetValue = { throw [Exception]::new("Registry read error") }
         }
 
         # Call the function
