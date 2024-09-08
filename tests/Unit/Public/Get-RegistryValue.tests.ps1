@@ -67,22 +67,19 @@ Describe 'Get-RegistryValue function tests' -Tag 'Public' {
         }
 
 
-        try
-        {
+        # Call the function
+        $result = Get-RegistryValue -Key $mockKey -ValueName 'Setting' -ErrorAction SilentlyContinue
 
-            # Call the function
-            $result = Get-RegistryValue -Key $mockKey -ValueName 'Setting' -ErrorAction Continue
+        # Validate that $null is returned
+        $result | Should -Be $null
 
-        }
-        catch
-        {
+        write-host $error[0].Exception.Message
 
-        }
-
-        # Log details for debugging
-        Log-TestDetails -TestName 'should handle errors and return $null when an exception is thrown' `
-            -Details $result `
-            -AdditionalInfo 'Key: $mockKey, ValueName: Setting'
+        $exception = @"
+Failed to retrieve value 'Setting'. Error: Exception calling "GetValue" with "2" argument(s): "Registry read error"
+"@
+        # Ensure the error contains the expected core message
+        $error[0].Exception.Message | Should -Be $exception
 
         # Validate that $null is returned and an error was written
         $result | Should -Be $null

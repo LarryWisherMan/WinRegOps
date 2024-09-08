@@ -25,6 +25,7 @@ System.Object
 
 function Get-RegistryValue
 {
+    [CmdletBinding()]
     param (
         [Microsoft.Win32.RegistryKey]$Key,
         [string]$ValueName
