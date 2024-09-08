@@ -28,8 +28,9 @@ Opens the registry key 'Software\MyApp' under HKEY_CURRENT_USER on the remote co
 Microsoft.Win32.RegistryKey
 
 .NOTES
-
+This function uses helper functions Get-OpenBaseKey and Get-OpenRemoteBaseKey to abstract the static calls for opening registry keys locally or remotely.
 #>
+
 function Open-RegistryKey {
     [CmdletBinding()]
     param (
@@ -44,12 +45,12 @@ function Open-RegistryKey {
     )
 
     try {
-        # Determine if local or remote
+        # Determine if the operation is local or remote
         $isLocal = $ComputerName -eq $env:COMPUTERNAME
         $regKey = if ($isLocal) {
-            [Microsoft.Win32.RegistryKey]::OpenBaseKey($RegistryHive, [Microsoft.Win32.RegistryView]::Default)
+            Get-OpenBaseKey -RegistryHive $RegistryHive
         } else {
-            [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey($RegistryHive, $ComputerName)
+            Get-OpenRemoteBaseKey -RegistryHive $RegistryHive -ComputerName $ComputerName
         }
 
         # Open the subkey

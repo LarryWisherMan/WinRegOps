@@ -43,6 +43,7 @@
         "coverage",
         "Backup-RegistryKey",
         "Export-RegistryKey",
-        "Get-RegistryValue"
+        "Get-RegistryValue",
+        "Open-RegistryKey"
     ]
 }
