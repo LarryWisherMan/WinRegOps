@@ -44,10 +44,16 @@ function Remove-RegistrySubKey {
     try {
         # Ensure ShouldProcess is used for safety with -WhatIf and -Confirm support
         if ($PSCmdlet.ShouldProcess("Registry subkey '$SubKeyName' on $ComputerName", "Remove")) {
+            # Proceed with deletion
             $ParentKey.DeleteSubKeyTree($SubKeyName)
             Write-Verbose "Successfully removed registry subkey '$SubKeyName' on $ComputerName."
             return $true
+        } else {
+            # ShouldProcess returned false, so nothing is done
+            Write-Verbose "Operation to remove registry subkey '$SubKeyName' on $ComputerName was skipped."
+            return $false
         }
+
     } catch {
         Write-Error "Failed to remove the registry subkey '$SubKeyName' on $ComputerName. Error: $_"
         return $false

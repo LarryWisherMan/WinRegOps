@@ -45,6 +45,7 @@
         "Export-RegistryKey",
         "Get-RegistryValue",
         "Open-RegistryKey",
-        "Open-RegistrySubKey"
+        "Open-RegistrySubKey",
+        "Remove-RegistrySubKey"
     ]
 }
