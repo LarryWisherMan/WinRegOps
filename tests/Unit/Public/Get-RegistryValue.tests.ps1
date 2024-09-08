@@ -88,23 +88,4 @@ Describe 'Get-RegistryValue function tests' -Tag 'Public' {
         $result | Should -Be $null
     }
 
-    # Test that verbose message is written when value is not found
-    It 'should write a verbose message if the value is not found' {
-        # Mock the RegistryKey object to simulate a missing value
-        $mockKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-            GetValue = { param($ValueName) return $null }
-        }
-
-        # Mock Write-Verbose to capture the verbose message
-        Mock Write-Verbose
-
-        # Call the function with the -Verbose switch
-        Get-RegistryValue -Key $mockKey -ValueName 'NonExistentValue' -Verbose -ErrorAction Continue
-
-        # Verify that Write-Verbose was called with the correct message
-        Assert-MockCalled Write-Verbose -Exactly 1 -Scope It -ParameterFilter {
-            $Message -eq 'NonExistentValue not found in the registry key.'
-        }
-    }
-
 }

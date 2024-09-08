@@ -75,21 +75,21 @@ Describe 'Open-RegistrySubKey function tests' -Tag 'Public' {
             OpenSubKey = { throw [Exception]::new("Unexpected error") }
         }
 
-        try
-        {
+        # Call the function without a try-catch inside the test itself
+        $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey' -ErrorAction SilentlyContinue
 
-            # Call the function
-            $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey'
-
-        }
-        catch
-        {
-
-        }
         # Validate that $null is returned
         $result | Should -Be $null
 
-        # Ensure the error was caught and handled
+        write-host $error[0].Exception.Message
+
+        $exception = @"
+Failed to open subkey 'FaultySubKey'. Exception: Exception calling "OpenSubKey" with "1" argument(s): "Unexpected error"
+"@
+        # Ensure the error contains the expected core message
+        $error[0].Exception.Message | Should -Be $exception
+
+        # Assert that the mock OpenSubKey method was called
         #Assert-MockCalled $mockParentKey.OpenSubKey -Exactly 1 -Scope It -ParameterFilter { $SubKeyName -eq 'FaultySubKey' }
     }
 }
