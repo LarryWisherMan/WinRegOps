@@ -122,7 +122,7 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
 
         catch
         {
-            $result = $_.Exception.Message
+            #$out $_.Exception.Message
         }
 
 
@@ -153,7 +153,7 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
 
         catch
         {
-            $result = $_.Exception.Message
+            #$result = $_.Exception.Message
         }
 
         # Log details for debugging

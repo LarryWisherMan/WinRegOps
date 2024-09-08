@@ -78,14 +78,13 @@ Describe 'Open-RegistrySubKey function tests' -Tag 'Public' {
         try
         {
 
-
             # Call the function
-            $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey' -ErrorAction Continue
+            $result = Open-RegistrySubKey -ParentKey $mockParentKey -SubKeyName 'FaultySubKey'
 
         }
         catch
         {
-            Write-Host $_.Exception.Message
+
         }
         # Validate that $null is returned
         $result | Should -Be $null

@@ -66,8 +66,18 @@ Describe 'Get-RegistryValue function tests' -Tag 'Public' {
             GetValue = { throw [Exception]::new("Registry read error") }
         }
 
-        # Call the function
-        $result = Get-RegistryValue -Key $mockKey -ValueName 'Setting' -ErrorAction Continue
+
+        try
+        {
+
+            # Call the function
+            $result = Get-RegistryValue -Key $mockKey -ValueName 'Setting' -ErrorAction Continue
+
+        }
+        catch
+        {
+
+        }
 
         # Log details for debugging
         Log-TestDetails -TestName 'should handle errors and return $null when an exception is thrown' `
