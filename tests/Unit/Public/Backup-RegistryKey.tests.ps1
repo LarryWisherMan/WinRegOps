@@ -167,7 +167,7 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
 
         # Validate the error response contains the key part of the message
         $result.Success | Should -Be $false
-        $result.Message | Should -Be "Failed to back up the registry key 'TestRegistry:\Software\MyApp'. Unexpected error"
+        $result.Message | Should -Be "Failed to back up the registry key 'TestRegistry:\Software\MyApp'. Error: Unexpected error"
     }
 
 
