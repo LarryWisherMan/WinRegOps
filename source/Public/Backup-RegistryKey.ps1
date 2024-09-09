@@ -30,10 +30,13 @@ System.Object
 .NOTES
 #>
 
-function Backup-RegistryKey {
+function Backup-RegistryKey
+{
+    [CmdletBinding()]
     param (
         [string]$ComputerName = $env:COMPUTERNAME,
-        [string]$RegistryPath,  # Now dynamic, can back up any registry path
+        [Parameter(Mandatory = $true)]
+        [string]$RegistryPath, # Now dynamic, can back up any registry path
         [string]$BackupDirectory = "C:\LHStuff\UserProfileTools\RegProfBackup"
     )
 
@@ -47,7 +50,7 @@ function Backup-RegistryKey {
     Test-DirectoryExists -Directory $backupDirectoryPath
 
     # Generate the backup file path with timestamp
-    $backupPath = Get-BackupFilePath -BackupDirectory $BackupDirectory
+    $backupPath = Get-BackupFilePath -BackupDirectory $backupDirectoryPath
 
     # Get the full definition of Export-RegistryKey as a script block
     $exportRegistryFunction = Get-FunctionScriptBlock -FunctionName 'Export-RegistryKey'
@@ -59,33 +62,52 @@ function Backup-RegistryKey {
         Invoke-Expression $exportFunction
 
         # Export the registry key
-        return Export-RegistryKey -RegistryPath $registryPath -ExportPath $regExportPath
+        return Export-RegistryKey -RegistryPath $registryPath -BackupPath $regExportPath
     }
 
-    try {
-        if ($isLocal) {
+    try
+    {
+        if ($isLocal)
+        {
             # Local backup
-            $backupResult = Export-RegistryKey -RegistryPath $RegistryPath -ExportPath $backupPath
-        } else {
-            # Remote backup
+            $backupResult = Export-RegistryKey -RegistryPath $RegistryPath -BackupPath $backupPath
+        }
+        else
+        {
+            # Remote backup using Invoke-Command
             $backupResult = Invoke-Command -ComputerName $ComputerName -ScriptBlock $scriptBlock `
                 -ArgumentList $backupPath, $RegistryPath, $exportRegistryFunction
         }
 
         # Return the result of the backup
-        if ($backupResult.Success) {
-            Write-Host $backupResult.Message
-        } else {
-            Write-Error $backupResult.Message
+        if ($backupResult.Success)
+        {
+            return @{
+                Success      = $true
+                BackupPath   = $backupPath
+                Message      = "Registry key backed up successfully."
+                ComputerName = $ComputerName
+            }
         }
-
-        return $backupResult
-    } catch {
+        else
+        {
+            Write-Error $backupResult.Message
+            return @{
+                Success      = $false
+                BackupPath   = $null
+                Message      = $backupResult.Message
+                ComputerName = $ComputerName
+            }
+        }
+    }
+    catch
+    {
+        # Handle exceptions and return failure
         Write-Error "Failed to back up the registry key '$RegistryPath' on $ComputerName. Error: $_"
         return @{
-            Success    = $false
-            BackupPath = $null
-            Message    = "Failed to back up the registry key '$RegistryPath'. $_"
+            Success      = $false
+            BackupPath   = $null
+            Message      = "Failed to back up the registry key '$RegistryPath'. Error: $_"
             ComputerName = $ComputerName
         }
     }

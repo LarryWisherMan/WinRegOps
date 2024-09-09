@@ -28,9 +28,11 @@ Opens the registry key 'Software\MyApp' under HKEY_CURRENT_USER on the remote co
 Microsoft.Win32.RegistryKey
 
 .NOTES
-
+This function uses helper functions Get-OpenBaseKey and Get-OpenRemoteBaseKey to abstract the static calls for opening registry keys locally or remotely.
 #>
-function Open-RegistryKey {
+
+function Open-RegistryKey
+{
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -43,29 +45,40 @@ function Open-RegistryKey {
         [string]$ComputerName = $env:COMPUTERNAME
     )
 
-    try {
-        # Determine if local or remote
+    try
+    {
+        # Determine if the operation is local or remote
         $isLocal = $ComputerName -eq $env:COMPUTERNAME
-        $regKey = if ($isLocal) {
-            [Microsoft.Win32.RegistryKey]::OpenBaseKey($RegistryHive, [Microsoft.Win32.RegistryView]::Default)
-        } else {
-            [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey($RegistryHive, $ComputerName)
+        $regKey = if ($isLocal)
+        {
+            Get-OpenBaseKey -RegistryHive $RegistryHive
+        }
+        else
+        {
+            Get-OpenRemoteBaseKey -RegistryHive $RegistryHive -ComputerName $ComputerName
         }
 
         # Open the subkey
         $openedKey = $regKey.OpenSubKey($RegistryPath, $true)
 
-        if ($openedKey) {
+        if ($openedKey)
+        {
             Write-Verbose "Successfully opened registry key at path '$RegistryPath' on '$ComputerName'."
             return $openedKey
-        } else {
+        }
+        else
+        {
             Write-Warning "Registry key at path '$RegistryPath' not found on '$ComputerName'."
             return $null
         }
-    } catch [System.Security.SecurityException] {
+    }
+    catch [System.Security.SecurityException]
+    {
         Write-Error "Access denied to registry key '$RegistryPath' on '$ComputerName'. Ensure you have sufficient permissions."
         return $null
-    } catch {
+    }
+    catch
+    {
         Write-Error "Failed to open registry key at path '$RegistryPath' on '$ComputerName'. Error: $_"
         return $null
     }

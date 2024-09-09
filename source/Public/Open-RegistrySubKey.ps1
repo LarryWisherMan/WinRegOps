@@ -22,21 +22,29 @@ Microsoft.Win32.RegistryKey
 
 .NOTES
 #>
-function Open-RegistrySubKey {
+function Open-RegistrySubKey
+{
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $true)]
         [Microsoft.Win32.RegistryKey]$ParentKey,
+
+        [Parameter(Mandatory = $true)]
         [string]$SubKeyName
     )
 
-    try {
+    try
+    {
+        # Attempt to open the subkey from the parent registry key
         $subKey = $ParentKey.OpenSubKey($SubKeyName)
-        if ($subKey -eq $null) {
-            Write-Warning "The subkey '$SubKeyName' does not exist."
-            return $null
-        }
+
+        # Return the opened subkey or $null if it doesn't exist
         return $subKey
-    } catch {
-        Write-Error "Error accessing subkey '$SubKeyName'. Error: $_"
+    }
+    catch
+    {
+        # Log the error and return $null in case of an exception
+        Write-Error "Failed to open subkey '$SubKeyName'. Exception: $_"
         return $null
     }
 }
