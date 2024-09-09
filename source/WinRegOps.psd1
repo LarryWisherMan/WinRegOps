@@ -122,10 +122,10 @@ Typical use cases include:
             ProjectUri   = 'https://github.com/LarryWisherMan/WinRegOps'
 
             # A URL to an icon representing this module.
-            # IconUri = ''
+            IconUri      = 'https://raw.githubusercontent.com/LarryWisherMan/WinRegOps/main/assets/WinRegOps85x85.png'
 
             # ReleaseNotes of this module
-            ReleaseNotes = 'https://raw.githubusercontent.com/LarryWisherMan/WinRegOps/main/WinRegOps/assets/WinRegOps.png'
+            ReleaseNotes = ''
 
         } # End of PSData hashtable
 
