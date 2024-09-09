@@ -50,6 +50,7 @@
         "Open-RegistryKey",
         "Open-RegistrySubKey",
         "Remove-RegistrySubKey",
-        "tests"
+        "tests",
+        "Build"
     ]
 }
