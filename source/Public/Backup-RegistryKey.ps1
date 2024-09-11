@@ -21,7 +21,7 @@ Backs up the registry key 'HKLM\Software\MyApp' on the local computer to the 'C:
 
 .EXAMPLE
 Backup-RegistryKey -ComputerName 'RemotePC' -RegistryPath 'HKLM\Software\MyApp'
-
+'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
 Backs up the registry key 'HKLM\Software\MyApp' from the remote computer 'RemotePC' to the default backup directory.
 
 .OUTPUTS
@@ -32,6 +32,7 @@ System.Object
 
 function Backup-RegistryKey
 {
+    [outputType([System.Collections.Hashtable])]
     [CmdletBinding()]
     param (
         [string]$ComputerName = $env:COMPUTERNAME,
@@ -47,10 +48,10 @@ function Backup-RegistryKey
     $backupDirectoryPath = Get-DirectoryPath -BasePath $BackupDirectory -ComputerName $ComputerName -IsLocal $isLocal
 
     # Ensure the backup directory exists locally or remotely
-    Test-DirectoryExists -Directory $backupDirectoryPath
+    Test-DirectoryExistence -Directory $backupDirectoryPath
 
     # Generate the backup file path with timestamp
-    $backupPath = Get-BackupFilePath -BackupDirectory $backupDirectoryPath
+    $backupPath = New-UniqueFilePath -Directory $backupDirectoryPath -Prefix "RegistryBackup" -Extension ".reg"
 
     # Get the full definition of Export-RegistryKey as a script block
     $exportRegistryFunction = Get-FunctionScriptBlock -FunctionName 'Export-RegistryKey'
@@ -59,10 +60,10 @@ function Backup-RegistryKey
         param ($regExportPath, $registryPath, $exportFunction)
 
         # Load the Export-RegistryKey function
-        Invoke-Expression $exportFunction
+        & $exportFunction
 
         # Export the registry key
-        return Export-RegistryKey -RegistryPath $registryPath -BackupPath $regExportPath
+        return Export-RegistryKey -RegistryPath $registryPath -ExportPath $regExportPath
     }
 
     try
@@ -70,7 +71,7 @@ function Backup-RegistryKey
         if ($isLocal)
         {
             # Local backup
-            $backupResult = Export-RegistryKey -RegistryPath $RegistryPath -BackupPath $backupPath
+            $backupResult = Export-RegistryKey -RegistryPath $RegistryPath -ExportPath $backupPath
         }
         else
         {

@@ -24,6 +24,7 @@ Microsoft.Win32.RegistryKey
 #>
 function Open-RegistrySubKey
 {
+    [outputType([Microsoft.Win32.RegistryKey])]
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

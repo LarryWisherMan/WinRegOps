@@ -6,9 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Added module icon and Psd1 private data
+- Quality Tests for functions and comment based help
 
 ### Changed
+
 - Updated Icon png
 - Changed `WisherTools.Helpers` to a RequiredModule module vs a nested module
 
@@ -27,7 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added unit test skeletons for all public functions in the WinRegOps
 
 ### Changed
+
 - Added 'WisherTools.Helpers' to Nested Modules
-- Updated `build.yaml` to exclude `Modules/WisherTools.Helpers` from code coverage analysis.
-- ### Changed
-- Refactored `Open-RegistryKey` function to use new helper functions `Get-OpenBaseKey` and `Get-OpenRemoteBaseKey` to abstract static method calls for opening registry keys locally or remotely. This improves testability and modularity of the code.
+
+- Updated `build.yaml` to exclude `Modules/WisherTools.Helpers` from code 
+coverage analysis.
+
+- Refactored `Open-RegistryKey` function to use new helper functions `Get-OpenBaseKey`
+and `Get-OpenRemoteBaseKey` to abstract static method calls for opening registry
+keys locally or remotely. This improves testability and modularity of the code.

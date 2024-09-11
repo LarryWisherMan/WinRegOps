@@ -106,11 +106,6 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
         # Call the function
         $result = Open-RegistryKey -RegistryPath 'Software\MyApp' -ErrorAction Continue
 
-        # Log details for debugging
-        Log-TestDetails -TestName 'should return $null and write an error on failure' `
-            -Details $result `
-            -AdditionalInfo 'RegistryPath: Software\MyApp, Expected Error: Unexpected error'
-
         # Validate that $null is returned
         $result | Should -Be $null
 
@@ -127,11 +122,6 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
 
         # Call the function
         $result = Open-RegistryKey -RegistryPath 'Software\MyApp' -ErrorAction Continue
-
-        # Log details for debugging
-        Log-TestDetails -TestName 'should return $null and write an error on failure' `
-            -Details $result `
-            -AdditionalInfo 'RegistryPath: Software\MyApp, Expected Error: Unexpected error'
 
         # Validate that $null is returned
         $result | Should -Be $null
