@@ -48,7 +48,7 @@ function Backup-RegistryKey
     $backupDirectoryPath = Get-DirectoryPath -BasePath $BackupDirectory -ComputerName $ComputerName -IsLocal $isLocal
 
     # Ensure the backup directory exists locally or remotely
-    Test-DirectoryExists -Directory $backupDirectoryPath
+    Test-DirectoryExistence -Directory $backupDirectoryPath
 
     # Generate the backup file path with timestamp
     $backupPath = New-UniqueFilePath -Directory $backupDirectoryPath -Prefix "RegistryBackup" -Extension ".reg"

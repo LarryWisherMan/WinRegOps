@@ -25,7 +25,7 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
     It 'should call Get-DirectoryPath and Test-DirectoryExists using TestDrive' {
         # Use TestDrive for file system isolation
         Mock Get-DirectoryPath { return "TestDrive:\RegProfBackup" }
-        Mock Test-DirectoryExists {}
+        Mock Test-DirectoryExistence {}
         Mock New-UniqueFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
         Mock Export-RegistryKey { return @{
                 Success      = $true
@@ -38,7 +38,7 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
 
         # Validate that the required functions were called
         Assert-MockCalled Get-DirectoryPath -Exactly 1 -Scope It
-        Assert-MockCalled Test-DirectoryExists -Exactly 1 -Scope It
+        Assert-MockCalled Test-DirectoryExistence -Exactly 1 -Scope It
     }
 
     It 'should call Export-RegistryKey for a local operation using TestRegistry' {
@@ -69,7 +69,7 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
     It 'should call Invoke-Command for a remote operation using TestDrive' {
         # Mock external functions
         Mock Get-DirectoryPath { return "\\RemotePC\TestDrive$\RegProfBackup" }
-        Mock Test-DirectoryExists {}
+        Mock Test-DirectoryExistence {}
         Mock New-UniqueFilePath { return "\\RemotePC\TestDrive$\ProfileListBackup_20220101_010101.reg" }
 
         Mock Export-RegistryKey { return @{
@@ -111,7 +111,7 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
     It 'should return an error if backup fails using TestDrive' {
         # Mock functions
         Mock -ModuleName $Script:dscModuleName -CommandName Export-RegistryKey { return @{ Success = $false; Message = "Failed to export key." } }
-        Mock -ModuleName $Script:dscModuleName -CommandName  Test-DirectoryExists {}
+        Mock -ModuleName $Script:dscModuleName -CommandName  Test-DirectoryExistence {}
         Mock -ModuleName $Script:dscModuleName -CommandName  New-UniqueFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
 
         try
@@ -136,7 +136,7 @@ Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
     It 'should handle exceptions and return an error message using TestDrive and TestRegistry' {
         # Mock functions
         Mock Export-RegistryKey { throw [Exception]::new("Unexpected error") }
-        Mock Test-DirectoryExists {}
+        Mock Test-DirectoryExistence {}
         Mock New-UniqueFilePath { return "TestDrive:\ProfileListBackup_20220101_010101.reg" }
 
         try
