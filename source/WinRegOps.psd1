@@ -68,8 +68,12 @@ Typical use cases include:
     # ProcessorArchitecture = ''
 
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules      = @('WisherTools.Helpers')
-
+    RequiredModules      = @(
+        @{
+            ModuleName    = 'WisherTools.Helpers'
+            ModuleVersion = '0.2.0'
+        }
+    )
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
 
@@ -101,7 +105,7 @@ Typical use cases include:
     DscResourcesToExport = @()
 
     # List of all modules packaged with this module
-    ModuleList           = @('WisherTools.Helpers')
+    #ModuleList                                         = @('WisherTools.Helpers')
 
     # List of all files packaged with this module
     # FileList = @()
@@ -122,7 +126,7 @@ Typical use cases include:
             ProjectUri   = 'https://github.com/LarryWisherMan/WinRegOps'
 
             # A URL to an icon representing this module.
-            IconUri      = 'https://raw.githubusercontent.com/LarryWisherMan/WinRegOps/main/assets/WinRegOps85x85.png'
+            IconUri      = 'https://raw.githubusercontent.com/LarryWisherMan/ModuleIcons/main/WinRegOps.png'
 
             # ReleaseNotes of this module
             ReleaseNotes = ''

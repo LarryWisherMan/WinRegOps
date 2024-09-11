@@ -22,7 +22,7 @@ Describe 'Export-RegistryKey.tests.ps1 Tests' -Tag 'Public' {
     # Test for successful local export
     It 'should export registry key successfully on local machine' {
         # Mock the result of Invoke-Expression and manually set LASTEXITCODE to 0 (success)
-        Mock Invoke-Expression { return $null }
+        Mock Invoke-RegCommand { return $null }
         $global:LASTEXITCODE = 0  # Manually set LASTEXITCODE to simulate success
 
         # Define expected result
@@ -45,7 +45,7 @@ Describe 'Export-RegistryKey.tests.ps1 Tests' -Tag 'Public' {
     # Test for failed export
     It 'should return failure message when export fails' {
         # Mock the result of Invoke-Expression and set LASTEXITCODE to non-zero (failure)
-        Mock Invoke-Expression { return $null }
+        Mock Invoke-RegCommand { return $null }
         $global:LASTEXITCODE = 1
 
         # Define expected result
@@ -68,7 +68,7 @@ Describe 'Export-RegistryKey.tests.ps1 Tests' -Tag 'Public' {
     # Test for exception handling
     It 'should handle exceptions and return error message' {
         # Mock Invoke-Expression to throw an exception
-        Mock Invoke-Expression { throw "Unexpected error" }
+        Mock Invoke-RegCommand { throw "Unexpected error" }
 
         # Define expected result
         $expected = @{
@@ -87,7 +87,7 @@ Describe 'Export-RegistryKey.tests.ps1 Tests' -Tag 'Public' {
     }
 
     It 'should export registry key from a remote computer' {
-        Mock Invoke-Expression { return $null }
+        Mock Invoke-RegCommand { return $null }
         $global:LASTEXITCODE = 0
 
         $expected = @{

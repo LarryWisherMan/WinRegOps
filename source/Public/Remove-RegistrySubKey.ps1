@@ -34,6 +34,7 @@ System.Boolean
 #>
 function Remove-RegistrySubKey
 {
+    [outputType([system.Boolean])]
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param (
         [Parameter(Mandatory = $true)]

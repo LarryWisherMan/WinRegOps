@@ -91,6 +91,7 @@ Pester:
   # Excludes one or more paths from being used to calculate code coverage.
   ExcludeFromCodeCoverage:
     - Modules/WisherTools.Helpers
+    - Holding/*
 
   # If no scripts are defined the default is to use all the tests under the project's
   # tests folder or source folder (if present). Test script paths can be defined to
@@ -103,8 +104,8 @@ Pester:
   # - tests/Integration
   ExcludeTag:
     #  - helpQuality
-    - FunctionalQuality
-    - TestQuality
+    #- FunctionalQuality
+    #- TestQuality
   Tag:
   CodeCoverageThreshold: 85 # Set to 0 to bypass
   #CodeCoverageOutputFile: JaCoCo_$OsShortName.xml
