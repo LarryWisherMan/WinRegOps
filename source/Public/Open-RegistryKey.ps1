@@ -14,6 +14,9 @@ The registry hive to open (e.g., HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER). Default
 .PARAMETER ComputerName
 The name of the computer where the registry key is located. Defaults to the local computer.
 
+.PARAMETER Writable
+Specifies whether the registry key should be opened with writable access. Defaults to $true.
+
 .EXAMPLE
 Open-RegistryKey -RegistryPath 'HKLM\Software\MyApp'
 
@@ -42,7 +45,10 @@ function Open-RegistryKey
         [Microsoft.Win32.RegistryHive]$RegistryHive = [Microsoft.Win32.RegistryHive]::LocalMachine,
 
         [Parameter(Mandatory = $false)]
-        [string]$ComputerName = $env:COMPUTERNAME
+        [string]$ComputerName = $env:COMPUTERNAME,
+
+        [Parameter(Mandatory = $false)]
+        [bool]$Writable = $true
     )
 
     try
@@ -57,9 +63,22 @@ function Open-RegistryKey
         {
             Get-OpenRemoteBaseKey -RegistryHive $RegistryHive -ComputerName $ComputerName
         }
+    }
+    catch [System.Security.SecurityException]
+    {
+        $customError = "Access denied to registry hive '$RegistryHive' on '$ComputerName'. Ensure you have sufficient permissions."
+        throw [System.Security.SecurityException] $customError
+    }
+    catch
+    {
+        Write-Error "Failed to open registry hive '$RegistryHive' on '$ComputerName'. Error: $_"
+        return $null
+    }
 
-        # Open the subkey
-        $openedKey = $regKey.OpenSubKey($RegistryPath, $true)
+    try
+    {
+        # Open the subkey using Open-RegistrySubKey (alias for Get-RegistrySubKey)
+        $openedKey = Open-RegistrySubKey -BaseKey $regKey -Name $RegistryPath -Writable $Writable
 
         if ($openedKey)
         {
@@ -72,11 +91,13 @@ function Open-RegistryKey
             return $null
         }
     }
+
     catch [System.Security.SecurityException]
     {
-        Write-Error "Access denied to registry key '$RegistryPath' on '$ComputerName'. Ensure you have sufficient permissions."
-        return $null
+        $customError = "Access denied to registry SubKey '$RegistryPath' on '$ComputerName'. Ensure you have sufficient permissions."
+        throw [System.Security.SecurityException] $customError
     }
+
     catch
     {
         Write-Error "Failed to open registry key at path '$RegistryPath' on '$ComputerName'. Error: $_"

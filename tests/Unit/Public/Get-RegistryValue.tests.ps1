@@ -7,8 +7,6 @@ BeforeAll {
     $PSDefaultParameterValues['Mock:ModuleName'] = $script:dscModuleName
     $PSDefaultParameterValues['Should:ModuleName'] = $script:dscModuleName
 
-    $helperPath = "$PSScriptRoot/../../Helpers/Log-TestDetails.ps1"
-    . $helperPath
 }
 
 AfterAll {
@@ -22,67 +20,200 @@ AfterAll {
 
 Describe 'Get-RegistryValue function tests' -Tag 'Public' {
 
-    # Test for successfully retrieving a value from the registry
-    It 'should retrieve the specified value from the registry' {
-        # Mock the RegistryKey object and the GetValue method to simulate a successful retrieval
-        $mockKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-            GetValue = { param($ValueName) if ($ValueName -eq 'Setting')
+    BeforeEach {
+        $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
+            GetValue = { param($valueName, $defaultValue, $options)
+                if ($valueName -eq 'Exists')
                 {
-                    return 'Value123'
+                    return 'RegistryValue'
+                }
+                elseif ($valueName -eq 'NotFound' -and $defaultValue)
+                {
+                    return $defaultValue
+                }
+                elseif ($valueName -eq 'ExpandEnvVar' -and $options -eq [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                {
+                    return '%SystemRoot%\System32'
                 }
                 else
                 {
                     return $null
-                } }
+                }
+            }
         }
-
-        # Call the function
-        $result = Get-RegistryValue -Key $mockKey -ValueName 'Setting'
-
-        # Validate the result
-        $result | Should -Be 'Value123'
     }
 
-    # Test when the value is not found in the registry
-    It 'should return $null if the specified value is not found in the registry' {
-        # Mock the RegistryKey object and the GetValue method to simulate a missing value
-        $mockKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-            GetValue = { param($ValueName) return $null }
+    Context 'When the registry value exists' {
+        It 'Should return the registry value' {
+
+            # Arrange
+            $valueName = 'Exists'
+
+            # Act
+            $result = Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName
+
+            # Assert
+            $result | Should -Be 'RegistryValue'
         }
-
-        # Call the function
-        $result = Get-RegistryValue -Key $mockKey -ValueName 'NonExistentValue' -ErrorAction Continue
-
-        # Validate that $null is returned
-        $result | Should -Be $null
     }
 
+    Context 'When the registry value does not exist' {
+        It 'Should return null if no default value is provided' {
+            # Arrange
+            $valueName = 'NotFound'
 
+            # Act
+            $result = Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName
 
-    # Test when an error occurs while retrieving the value
-    It 'should handle errors and return $null when an exception is thrown' {
-        # Mock the RegistryKey object to throw an error when GetValue is called
-        $mockKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-            GetValue = { throw [Exception]::new("Registry read error") }
+            # Assert
+            $result | Should -BeNullOrEmpty
         }
 
+        It 'Should return the default value if specified' {
+            # Arrange
+            $valueName = 'NotFound'
+            $defaultValue = 'DefaultFallback'
 
-        # Call the function
-        $result = Get-RegistryValue -Key $mockKey -ValueName 'Setting' -ErrorAction SilentlyContinue
+            # Act
+            $result = Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName -DefaultValue $defaultValue
 
-        # Validate that $null is returned
-        $result | Should -Be $null
+            # Assert
+            $result | Should -Be 'DefaultFallback'
+        }
+    }
 
-        write-host $error[0].Exception.Message
+    Context 'When using registry value options' {
+        It 'Should retrieve value without expanding environment variables' {
+            # Arrange
+            $valueName = 'ExpandEnvVar'
+            $options = [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames
 
-        $exception = @"
-Failed to retrieve value 'Setting'. Error: Exception calling "GetValue" with "2" argument(s): "Registry read error"
-"@
-        # Ensure the error contains the expected core message
-        $error[0].Exception.Message | Should -Be $exception
+            # Act
+            $result = Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName -Options $options
 
-        # Validate that $null is returned and an error was written
-        $result | Should -Be $null
+            # Assert
+            $result | Should -Be '%SystemRoot%\System32'
+        }
+
+        It 'Should return null for non-existent value with options' {
+            # Arrange
+            $valueName = 'NonExistentWithOptions'
+            $options = [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames
+
+            # Act
+            $result = Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName -Options $options
+
+            # Assert
+            $result | Should -BeNullOrEmpty
+        }
+    }
+
+    Context 'When options are none and a default value is provided' {
+        It 'Should return the value if it exists, ignoring the default value' {
+            # Arrange
+            $valueName = 'Exists'
+            $defaultValue = 'SomeDefault'
+
+            # Act
+            $result = Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName -DefaultValue $defaultValue
+
+            # Assert
+            $result | Should -Be 'RegistryValue'
+        }
+
+        It 'Should return the default value if the registry value does not exist' {
+            # Arrange
+            $valueName = 'NotFound'
+            $defaultValue = 'DefaultValue'
+
+            # Act
+            $result = Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName -DefaultValue $defaultValue
+
+            # Assert
+            $result | Should -Be 'DefaultValue'
+        }
+    }
+
+    Context 'Error Handling' {
+
+        It 'Should throw a SecurityException when access is denied' {
+
+            # Arrange
+            $valueName = 'SecurityError'
+
+            $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
+                GetValue = { param($valueName, $defaultValue, $options)
+                    throw [System.Security.SecurityException]
+                }
+            }
+
+            # Act & Assert
+            { Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName } | Should -Throw -ExpectedMessage 'Exception calling "GetValue" with "1" argument(s): "System.Security.SecurityException"'
+        }
+
+        It 'Should throw an ObjectDisposedException when the registry key is closed' {
+
+
+            # Arrange
+            $valueName = 'DisposedError'
+
+            $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
+                GetValue = { param($valueName, $defaultValue, $options)
+                    throw  [System.ObjectDisposedException]
+                }
+            }
+
+            # Act & Assert
+            { Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName } | Should -Throw -ExpectedMessage 'Exception calling "GetValue" with "1" argument(s): "System.ObjectDisposedException"'
+
+        }
+
+        It 'Should throw an IOException when the registry key is marked for deletion' {
+
+            $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
+                GetValue = { param($valueName, $defaultValue, $options)
+                    throw  [System.IO.IOException]
+                }
+            }
+            # Arrange
+            $valueName = 'IOError'
+
+            # Act & Assert
+            { Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName } | Should -Throw -ExpectedMessage 'Exception calling "GetValue" with "1" argument(s): "System.IO.IOException"'
+        }
+
+        It 'Should throw an ArgumentException for invalid options' {
+            # Arrange
+            $valueName = 'ArgumentError'
+            $invalidOptions = [Microsoft.Win32.RegistryOptions]::Volatile
+
+
+            $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
+                GetValue = { param($valueName, $defaultValue, $options)
+                    throw [System.ArgumentException]
+
+                }
+            }
+
+            # Act & Assert
+            { Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName -Options $invalidOptions } | Should -Throw -ExpectedMessage 'Exception calling "GetValue" with "3" argument(s): "System.ArgumentException"'
+        }
+
+        It 'Should throw an UnauthorizedAccessException when access rights are insufficient' {
+
+            $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
+                GetValue = { param($valueName, $defaultValue, $options)
+                    throw [System.UnauthorizedAccessException]
+
+                }
+            }
+
+            # Arrange
+            $valueName = 'UnauthorizedError'
+
+            # Act & Assert
+            { Get-RegistryValue -BaseKey $mockRegistryKey -ValueName $valueName } | Should -Throw -ExpectedMessage 'Exception calling "GetValue" with "1" argument(s): "System.UnauthorizedAccessException"'
+        }
     }
 
 }
