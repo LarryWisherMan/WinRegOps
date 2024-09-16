@@ -12,7 +12,7 @@ the .net class better
 
 ### Fixed
 
--Error Handling for `[System.Security.SecurityException]` in `Open-RegistryKey`
+- Error Handling for `[System.Security.SecurityException]` in `Open-RegistryKey`
 
 ### Changed
 
