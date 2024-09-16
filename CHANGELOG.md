@@ -5,6 +5,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Get-RegistrySubKey` to replace `Open-RegistrySubKey`. This implementation follows
+the .net class better
+
+### Fixed
+
+-Error Handling for `[System.Security.SecurityException]` in `Open-RegistryKey`
+
+### Changed
+
+- `Get-RegistrySubKey` includes an alias for `Open-RegistrySubKey` to for compatibility
+
 ## [0.3.0] - 2024-09-11
 
 ### Added

@@ -51,6 +51,18 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
             }
             return $mockRegistryKey
         }
+
+        Mock Open-RegistrySubKey {
+            param ($BaseKey, $Name, $Writable)
+            if ($Name -eq 'Software\MyApp')
+            {
+                return 'MockedSubKey'
+            }
+            else
+            {
+                return $null
+            }
+        }
     }
 
     # Test for opening a local registry key successfully
@@ -59,20 +71,18 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
         $result = Open-RegistryKey -RegistryPath 'Software\MyApp'
 
         # Validate the result
-        $result | Should -Be 'MockedRegistryKey'
+        $result | Should -Be 'MockedSubKey'
 
         # Ensure Get-OpenBaseKey was called
         Assert-MockCalled Get-OpenBaseKey -Exactly 1 -Scope It
+        Assert-MockCalled Open-RegistrySubKey -Exactly 1 -Scope It
     }
 
     # Test for handling non-existent local registry key
     It 'should return $null if the local registry key does not exist' {
         # Mock the return value of the registry subkey being non-existent
-        Mock Get-OpenBaseKey {
-            $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Methods @{
-                OpenSubKey = { param($path, $writable) return $null }
-            }
-            return $mockRegistryKey
+        Mock Open-RegistrySubKey {
+            param ($BaseKey, $Name, $Writable) return $null
         }
 
         # Call the function
@@ -83,6 +93,7 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
 
         # Ensure Get-OpenBaseKey was called
         Assert-MockCalled Get-OpenBaseKey -Exactly 1 -Scope It
+        Assert-MockCalled Open-RegistrySubKey -Exactly 1 -Scope It
     }
 
     # Test for opening a registry key on a remote computer
@@ -91,34 +102,29 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
         $result = Open-RegistryKey -RegistryPath 'Software\MyApp' -ComputerName 'RemotePC'
 
         # Validate the result
-        $result | Should -Be 'MockedRemoteRegistryKey'
+        $result | Should -Be 'MockedSubKey'
 
         # Ensure Get-OpenRemoteBaseKey was called
         Assert-MockCalled Get-OpenRemoteBaseKey -Exactly 1 -Scope It
+        Assert-MockCalled Open-RegistrySubKey -Exactly 1 -Scope It
     }
 
     # Test for handling access denied
-    # Test for handling access denied
     It 'should return $null and write an error if access is denied' {
         # Mock access denied exception
-        Mock -ModuleName $Script:dscModuleName -CommandName Get-OpenBaseKey { throw [System.Security.SecurityException]::new("Access Denied") }
+        Mock Get-OpenBaseKey { throw [System.Security.SecurityException]::new("Access Denied") }
 
         # Call the function
-        $result = Open-RegistryKey -RegistryPath 'Software\MyApp' -ErrorAction Continue
-
-        # Validate that $null is returned
-        $result | Should -Be $null
+        { Open-RegistryKey -RegistryPath 'Software\MyApp' } | should -throw
 
         # Ensure the error was thrown and caught correctly
         Assert-MockCalled Get-OpenBaseKey -Exactly 1 -Scope It
-
-
     }
 
     # Test for generic failure when opening the registry key
     It 'should return $null and write an error on failure' {
         # Mock a generic failure
-        Mock -ModuleName $Script:dscModuleName -CommandName Get-OpenBaseKey { throw [Exception]::new("Unexpected error") }
+        Mock Get-OpenBaseKey { throw [Exception]::new("Unexpected error") }
 
         # Call the function
         $result = Open-RegistryKey -RegistryPath 'Software\MyApp' -ErrorAction Continue
@@ -130,7 +136,12 @@ Describe 'Open-RegistryKey function tests' -Tag 'Public' {
         Assert-MockCalled Get-OpenBaseKey -Exactly 1 -Scope It
 
         # Check that the correct error message was written
+        $message = @"
+Failed to open registry hive 'LocalMachine' on '$($env:Computername)'. Error: Unexpected error
+"@
 
+        $errorRecord = $error[0].Exception.Message
+        $errorRecord | Should -Be $message
     }
 
 }
