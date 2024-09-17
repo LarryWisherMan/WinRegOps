@@ -34,10 +34,6 @@ function Export-RegistryKey
 
     try
     {
-
-
-
-
         #$exportCommand = "reg export `"$RegistryPath`" `"$ExportPath`""
         $result = Invoke-RegCommand -RegistryPath $RegistryPath -ExportPath $ExportPath
         #Invoke-Expression $exportCommand

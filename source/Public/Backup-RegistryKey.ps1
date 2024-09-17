@@ -38,7 +38,7 @@ function Backup-RegistryKey
         [string]$ComputerName = $env:COMPUTERNAME,
         [Parameter(Mandatory = $true)]
         [string]$RegistryPath, # Now dynamic, can back up any registry path
-        [string]$BackupDirectory = "C:\LHStuff\UserProfileTools\RegProfBackup"
+        [string]$BackupDirectory = $ENV:RegBackupDirectory
     )
 
     # Determine if the operation is local or remote

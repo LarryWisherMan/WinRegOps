@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Get-RegistrySubKey` to replace `Open-RegistrySubKey`. This implementation follows
 the .net class better
 
+- `Invoke-DeleteSubKey` and `Invoke-DeleteSubKeyTree` private functions for removing
+subkeys
+
+- `Remove-RegistrySubKey` and `Removing-RegistryKeyTree` public
+public implementation
+
+- New Private function `Get-RegistrySubKeyOperation` for managing the logic of
+opening a key or using an existing one provided in `Remove-RegistrySubKey`
+
 ### Fixed
 
 - Error Handling for `[System.Security.SecurityException]` in `Open-RegistryKey`
