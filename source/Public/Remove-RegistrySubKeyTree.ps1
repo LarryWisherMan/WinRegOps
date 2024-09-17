@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-Removes a specified subkey from the Windows registry.
+Recursively removes a specified subkey and all of its subkeys from the Windows registry.
 
 .DESCRIPTION
-The `Remove-RegistrySubKey` cmdlet removes a subkey from the Windows registry.
-It provides flexibility to either pass a registry hive and path or an existing registry key object to delete the subkey.
-It supports deleting subkeys on both local and remote computers.
+The `Remove-RegistrySubKeyTree` cmdlet deletes a registry subkey and all of its child subkeys (if any) from the Windows registry.
+This cmdlet provides flexibility to either specify a registry hive and path, or pass an existing registry key object to delete the subkey tree.
+It supports deleting registry subkeys on both local and remote computers.
 
 .PARAMETER RegistryHive
 Specifies the registry hive where the key resides. This parameter is part of the 'ByHive' parameter set.
@@ -25,39 +25,35 @@ Specifies the path to the registry key that contains the subkey to delete. This 
 Specifies the name of the computer on which to perform the registry operation. Defaults to the local machine if not specified. This parameter is part of the 'ByHive' parameter set.
 
 .PARAMETER ParentKey
-Specifies an existing registry key object from which to delete the subkey. This parameter is part of the 'ByKey' parameter set.
+Specifies an existing registry key object from which to delete the subkey tree. This parameter is part of the 'ByKey' parameter set.
 
 .PARAMETER SubKeyName
-Specifies the name of the subkey to delete. This parameter is part of the 'ByKey' parameter set.
-
-.PARAMETER ThrowOnMissingSubKey
-Indicates whether the cmdlet should throw an error if the subkey to delete does not exist.
-If set to `$false`, no error will be thrown when attempting to delete a non-existent subkey. Defaults to `$true`.
+Specifies the name of the subkey to delete, including all of its child subkeys. This parameter is part of the 'ByKey' parameter set.
 
 .EXAMPLE
-Remove-RegistrySubKey -RegistryHive LocalMachine -RegistryPath 'SOFTWARE\MyApp\Settings'
+Remove-RegistrySubKeyTree -RegistryHive LocalMachine -RegistryPath 'SOFTWARE\MyApp\Settings'
 
-This command deletes the 'Settings' subkey under 'HKEY_LOCAL_MACHINE\SOFTWARE\MyApp' on the local machine.
+This command deletes the 'Settings' subkey and all its child subkeys under 'HKEY_LOCAL_MACHINE\SOFTWARE\MyApp' on the local machine.
 
 .EXAMPLE
 $parentKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey('SOFTWARE\MyApp', $true)
-Remove-RegistrySubKey -ParentKey $parentKey -SubKeyName 'Settings'
+Remove-RegistrySubKeyTree -ParentKey $parentKey -SubKeyName 'Settings'
 
-This command deletes the 'Settings' subkey under 'HKEY_LOCAL_MACHINE\SOFTWARE\MyApp' using the parent key object.
+This command deletes the 'Settings' subkey and all its child subkeys under 'HKEY_LOCAL_MACHINE\SOFTWARE\MyApp' using the parent key object.
 
 .EXAMPLE
-Remove-RegistrySubKey -RegistryHive LocalMachine -RegistryPath 'SOFTWARE\MyApp\Settings' -ComputerName 'RemotePC'
+Remove-RegistrySubKeyTree -RegistryHive LocalMachine -RegistryPath 'SOFTWARE\MyApp\Settings' -ComputerName 'RemotePC'
 
-This command deletes the 'Settings' subkey under 'HKEY_LOCAL_MACHINE\SOFTWARE\MyApp' on a remote computer named 'RemotePC'.
+This command deletes the 'Settings' subkey and all its child subkeys under 'HKEY_LOCAL_MACHINE\SOFTWARE\MyApp' on a remote computer named 'RemotePC'.
 
 .NOTES
 This function uses the .NET `Microsoft.Win32.RegistryKey` class to interact with the Windows registry.
-It is recommended to run this cmdlet with appropriate permissions, as registry edits may require elevated privileges.
+Registry operations can be sensitive, and it is recommended to run this cmdlet with appropriate permissions (e.g., as an Administrator) to avoid access issues.
 
 #>
-function Remove-RegistrySubKey
+function Remove-RegistrySubKeyTree
 {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High', DefaultParameterSetName = 'ByHive')]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High", DefaultParameterSetName = 'ByHive')]
     param (
         # Parameter Set: ByHive
         [Parameter(Mandatory, ParameterSetName = 'ByHive')]
@@ -77,16 +73,11 @@ function Remove-RegistrySubKey
         [Parameter(ParameterSetName = 'ByHive')]
         [string]$ComputerName = $env:COMPUTERNAME,
 
-
         # Parameter Set: ByKey
         [Parameter(Mandatory, ParameterSetName = 'ByKey')]
         [Microsoft.Win32.RegistryKey]$ParentKey,
         [Parameter(Mandatory, ParameterSetName = 'ByKey')]
-        [string]$SubKeyName,
-        [Parameter(ParameterSetName = 'ByHive')]
-        [Parameter(ParameterSetName = 'ByKey')]
-        [bool]$ThrowOnMissingSubKey = $true
-
+        [string]$SubKeyName
     )
 
     begin
@@ -131,17 +122,11 @@ function Remove-RegistrySubKey
 
     process
     {
-        if ($PSCmdlet.ShouldProcess("$($ParentKey.Name)\$subKeyName", "Removing registry subkey using DeleteSubKey"))
+        if ($PSCmdlet.ShouldProcess("$($ParentKey.Name)\$subKeyName", "Removing registry subkey tree"))
         {
-            # Use DeleteSubKey method
-            try
-            {
-                Invoke-DeleteSubKey -ParentKey $ParentKey -SubKeyName $subKeyName -ThrowOnMissingSubKey $ThrowOnMissingSubKey
-            }
-            catch
-            {
-                throw $_
-            }
+            # Call Invoke-DeleteSubKeyTree to handle the deletion
+            Invoke-DeleteSubKeyTree -ParentKey $ParentKey -SubKeyName $subKeyName -ThrowOnMissingSubKey $true
+            Write-Verbose "SubKey '$subKeyName' and its child subkeys deleted using DeleteSubKeyTree."
         }
     }
 
@@ -153,5 +138,4 @@ function Remove-RegistrySubKey
             $ParentKey.Dispose()
         }
     }
-
 }
