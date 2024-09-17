@@ -75,4 +75,41 @@ Windows Registry Editor Version 5.00
             }
         }
     }
+
+    Context 'Backup-RegistryKey - Local Backup' {
+        It 'Should successfully back up the local registry key' {
+
+            New-Item -Path "TestRegistry:\TestKey" -Force | Out-Null
+            New-ItemProperty -Path "TestRegistry:\TestKey" -Name "TestValue" -Value "123" | Out-Null
+
+            $backupDirectory = "$(Get-PSDrive -Name TestDrive |Select-Object -ExpandProperty Root)\RegProfBackup"
+            $registryPath = "$(Get-PSDrive TestRegistry | Select-Object -ExpandProperty Root)\TestKey"
+            $localComputerName = $env:COMPUTERNAME
+
+
+
+            # Act
+            $result = Backup-RegistryKey -RegistryPath $registryPath -BackupDirectory $backupDirectory
+
+            $exportedContent = (Get-Content -Path $result.BackupPath -raw).Trim()
+
+            $ExpectedContent = @"
+Windows Registry Editor Version 5.00
+
+[$registryPath]
+"TestValue"="123"
+"@
+
+
+            $exportedContent | Should -Be $ExpectedContent
+            # Assert
+            $result | Should -Not -BeNullOrEmpty
+            $result.Success | Should -Be $true
+            $result.BackupPath | Should -Not -BeNullOrEmpty
+            $result.BackUpPath | Should -BeLike "$backupDirectory*.reg"
+            Test-Path $result.BackupPath | Should -Be $true
+            $result.Message | Should -Be "Registry key backed up successfully."
+            $result.ComputerName | Should -Be $localComputerName
+        }
+    }
 }
