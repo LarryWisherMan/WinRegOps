@@ -16,6 +16,9 @@ subkeys
 - `Remove-RegistrySubKey` and `Removing-RegistryKeyTree` public
 public implementation
 
+- New Private function `Get-RegistrySubKeyOperation` for managing the logic of
+opening a key or using an existing one provided in `Remove-RegistrySubKey`
+
 ### Fixed
 
 - Error Handling for `[System.Security.SecurityException]` in `Open-RegistryKey`

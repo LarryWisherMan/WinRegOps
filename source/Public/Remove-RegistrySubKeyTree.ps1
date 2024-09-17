@@ -82,38 +82,29 @@ function Remove-RegistrySubKeyTree
 
     begin
     {
-        # Determine which base key to use
-        if ($PSCmdlet.ParameterSetName -eq 'ByHive')
+        if ($PSCmdlet.ParameterSetName -eq "ByHive")
         {
-            # Split the RegistryPath into parent path and subkey name
-            $parentPath = Split-Path -Path $RegistryPath -Parent
-            $subKeyName = Split-Path -Path $RegistryPath -Leaf
-
-            # Open the parent key using Open-RegistryKey
-            try
-            {
-                $ParentKey = Open-RegistryKey -RegistryPath $parentPath -RegistryHive $RegistryHive -ComputerName $ComputerName -Writable $true
-            }
-            catch
-            {
-                throw $_
-            }
-
-            if ($null -eq $ParentKey)
-            {
-                throw [System.ObjectDisposedException]::new("Failed to open registry key: $($RegistryHive)\$parentPath")
+            $params = @{
+                RegistryPath     = $RegistryPath
+                RegistryHive     = $RegistryHive
+                ComputerName     = $ComputerName
+                ParameterSetName = $PSCmdlet.ParameterSetName
             }
         }
-        elseif ($PSCmdlet.ParameterSetName -eq 'ByKey')
+        else
         {
-            if ($null -eq $ParentKey)
-            {
-                throw [System.ArgumentNullException]::new("ParentKey cannot be null.")
+            $params = @{
+                ParentKey        = $ParentKey
+                SubKeyName       = $SubKeyName
+                ParameterSetName = $PSCmdlet.ParameterSetName
             }
-            $subKeyName = $SubKeyName
         }
 
-        # Ensure that subKeyName is not null or empty
+        $operationDetails = Get-RegistrySubKeyOperation @params
+
+        $ParentKey = $operationDetails.ParentKey
+        $subKeyName = $operationDetails.SubKeyName
+
         if ([string]::IsNullOrEmpty($subKeyName))
         {
             throw [System.ArgumentNullException]::new("SubKeyName cannot be null or empty.")

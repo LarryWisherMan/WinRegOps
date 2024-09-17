@@ -10,6 +10,9 @@ BeforeAll {
 
     $helperPath = "$PSScriptRoot/../../Helpers/Log-TestDetails.ps1"
     . $helperPath
+
+    $ENV:RegBackupDirectory = "TestDrive:\Backups"
+
 }
 
 AfterAll {
@@ -18,6 +21,8 @@ AfterAll {
     $PSDefaultParameterValues.Remove('Should:ModuleName')
 
     Get-Module -Name $script:dscModuleName -All | Remove-Module -Force
+
+    remove-item -path Env:RegBackupDirectory -ErrorAction SilentlyContinue
 }
 
 Describe 'Backup-RegistryKey function tests' -Tag 'Public' {
