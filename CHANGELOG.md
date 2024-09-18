@@ -19,6 +19,22 @@ public implementation
 - New Private function `Get-RegistrySubKeyOperation` for managing the logic of
 opening a key or using an existing one provided in `Remove-RegistrySubKey`
 
+- **`New-RegistryKeyValuesObject`**:
+  - Retrieves and exports all the values of a specified registry key or subkey
+  into a custom object. The object includes the registry path, backup date, user,
+   computer name, and a dictionary of the key's values (including data type and value).
+
+  - Supports backing up both root keys and subkeys.
+
+- **`Get-RegistryValueNames`**:
+  - Retrieves all the value names from a specified registry key. This function
+  simplifies the process of listing all registry values for a given key.
+
+- **`Get-RegistryValueKind`**:
+  - Retrieves the type (kind) of a specified registry key value. This allows for
+   easy identification of value types such as `String`, `DWord`, and `Binary`
+    within registry keys.
+
 ### Fixed
 
 - Error Handling for `[System.Security.SecurityException]` in `Open-RegistryKey`
