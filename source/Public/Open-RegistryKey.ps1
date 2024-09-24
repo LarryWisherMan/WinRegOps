@@ -38,8 +38,8 @@ function Open-RegistryKey
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
-        [string]$RegistryPath,
+        [Parameter(Mandatory = $false)]
+        [string]$RegistryPath, # No longer mandatory
 
         [Parameter(Mandatory = $false)]
         [Microsoft.Win32.RegistryHive]$RegistryHive = [Microsoft.Win32.RegistryHive]::LocalMachine,
@@ -77,6 +77,13 @@ function Open-RegistryKey
 
     try
     {
+        # If RegistryPath is not provided, return the base key
+        if (-not $RegistryPath)
+        {
+            Write-Verbose "No RegistryPath provided. Returning the base key for hive '$RegistryHive' on '$ComputerName'."
+            return $regKey
+        }
+
         # Open the subkey using Open-RegistrySubKey (alias for Get-RegistrySubKey)
         $openedKey = Open-RegistrySubKey -BaseKey $regKey -Name $RegistryPath -Writable $Writable
 
@@ -91,13 +98,11 @@ function Open-RegistryKey
             return $null
         }
     }
-
     catch [System.Security.SecurityException]
     {
         $customError = "Access denied to registry SubKey '$RegistryPath' on '$ComputerName'. Ensure you have sufficient permissions."
         throw [System.Security.SecurityException] $customError
     }
-
     catch
     {
         Write-Error "Failed to open registry key at path '$RegistryPath' on '$ComputerName'. Error: $_"
