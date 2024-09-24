@@ -144,4 +144,42 @@ Failed to open registry hive 'LocalMachine' on '$($env:Computername)'. Error: Un
         $errorRecord | Should -Be $message
     }
 
+    # Edge case test: No RegistryPath provided (should return base key)
+    It 'should return base registry key when no RegistryPath is provided' {
+
+        InModuleScope -ScriptBlock {
+            # Mock a valid, non-disposed RegistryKey object
+
+
+            Mock Get-OpenBaseKey {
+                $mockRegistryKey = New-MockObject -Type 'Microsoft.Win32.RegistryKey' -Properties @{
+                    name = 'HKEY_LOCAL_MACHINE'
+
+                } -Methods @{
+                    GetSubKeyNames = { return @('Software') }
+                    Dispose        = { }
+                }
+                return $mockRegistryKey
+            }
+
+            Mock Open-RegistrySubKey {
+                param ($BaseKey, $Name, $Writable) return 'MockedSubKey'
+            }
+
+        }
+
+        # Call the function without providing RegistryPath
+        $result = Open-RegistryKey
+
+        $result.NAme | Should -Be 'HKEY_LOCAL_MACHINE'
+
+        # Ensure Get-OpenBaseKey was called (local machine by default)
+        Assert-MockCalled Get-OpenBaseKey -Exactly 1 -Scope It
+
+        Assert-MockCalled Open-RegistrySubKey -Exactly 0 -Scope It
+
+        # Ensure Open-RegistrySubKey was NOT called since no path was provided
+    }
+
+
 }

@@ -42,6 +42,7 @@ opening a key or using an existing one provided in `Remove-RegistrySubKey`
 ### Changed
 
 - `Get-RegistrySubKey` includes an alias for `Open-RegistrySubKey` to for compatibility
+- `Open-RegistryKey` too make `-RegistryPath` optional to return the root hive
 
 ## [0.3.0] - 2024-09-11
 
